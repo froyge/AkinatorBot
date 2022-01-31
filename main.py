@@ -3,11 +3,12 @@ from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler
 from config import BOT_TOKEN
 from db_map import init_db, adduser, getchildmode, getlanguage, updatelanguage, updatechildmode
-
+import os
 from strings import AKI_FIRST_QUESTION, AKI_LANG_CODE, AKI_LANG_MSG, CHILDMODE_MSG, START_MSG
 import akinator
 
 init_db()
+PORT = int(os.environ.get('PORT', 5000))
 
 def aki_start(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
@@ -120,7 +121,13 @@ def main():
     dp.add_handler(CallbackQueryHandler(aki_play_callback_handler, pattern=r"aki_play_", run_async=True))
     dp.add_handler(CallbackQueryHandler(aki_win, pattern=r"aki_win_", run_async=True))
 
-    updater.start_polling()
+
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=BOT_TOKEN)
+    updater.bot.setWebhook('https://msai-bot.herokuapp.com//' + BOT_TOKEN)
+
+    #updater.start_polling()
     updater.idle()
 
 if __name__ == '__main__':
